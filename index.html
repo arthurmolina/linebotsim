@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LineBot Sim</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- SPLASH SCREEN -->
+<div id="splash" onclick="dismissSplash()">
+  <div class="sp-grid"></div>
+  <div class="sp-scan"></div>
+  <div class="sp-corner tl"></div><div class="sp-corner tr"></div>
+  <div class="sp-corner bl"></div><div class="sp-corner br"></div>
+
+  <div class="sp-content">
+    <svg class="sp-robot" viewBox="0 0 220 160" width="176" height="128" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arw" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+          <path d="M0,1 L7,3.5 L0,6 Z" fill="#00e87a"/>
+        </marker>
+        <filter id="glow"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <path d="M0,148 Q55,95 110,148 Q165,200 220,148" stroke="rgba(255,218,90,.45)" stroke-width="10" fill="none" stroke-linecap="round" filter="url(#glow)"/>
+      <rect x="45" y="42" width="130" height="86" rx="5" fill="rgba(0,50,22,.85)" stroke="#00e87a" stroke-width="1.5"/>
+      <rect x="27" y="58" width="20" height="32" rx="2" fill="#00e87a" opacity=".9"/>
+      <rect x="173" y="58" width="20" height="32" rx="2" fill="#00e87a" opacity=".9"/>
+      <circle cx="45" cy="74" r="3.5" fill="#003820"/>
+      <circle cx="175" cy="74" r="3.5" fill="#003820"/>
+      <line x1="104" y1="74" x2="116" y2="74" stroke="rgba(0,232,122,.45)" stroke-width="1"/>
+      <line x1="110" y1="68" x2="110" y2="80" stroke="rgba(0,232,122,.45)" stroke-width="1"/>
+      <line x1="110" y1="68" x2="110" y2="34" stroke="rgba(0,232,122,.28)" stroke-width="1" stroke-dasharray="4,3"/>
+      <line x1="58" y1="28" x2="162" y2="28" stroke="#00e87a" stroke-width="1.8"/>
+      <line x1="110" y1="28" x2="110" y2="6" stroke="#00e87a" stroke-width="1.8" marker-end="url(#arw)"/>
+      <circle cx="58"  cy="28" r="5.5" fill="#00e87a" class="sp-s1" filter="url(#glow)"/>
+      <circle cx="75"  cy="28" r="5.5" fill="#00e87a" class="sp-s2" filter="url(#glow)"/>
+      <circle cx="92"  cy="28" r="5.5" fill="#00e87a" class="sp-s3" filter="url(#glow)"/>
+      <circle cx="110" cy="28" r="5.5" fill="#00e87a" class="sp-s4" filter="url(#glow)"/>
+      <circle cx="128" cy="28" r="5.5" fill="#00e87a" class="sp-s5" filter="url(#glow)"/>
+      <circle cx="145" cy="28" r="5.5" fill="#00e87a" class="sp-s6" filter="url(#glow)"/>
+      <circle cx="162" cy="28" r="5.5" fill="#00e87a" class="sp-s7" filter="url(#glow)"/>
+    </svg>
+
+    <div class="sp-title">LineBot Sim</div>
+    <div class="sp-sub" data-i18n="spSub">Simulador Seguidor de Linha</div>
+
+    <div class="sp-feats">
+      <div class="sp-feat"><div class="sp-fdot"></div><span data-i18n="spF1">Controle PID</span></div>
+      <div class="sp-feat"><div class="sp-fdot"></div><span data-i18n="spF2">Sensores Configuráveis</span></div>
+      <div class="sp-feat"><div class="sp-fdot"></div><span data-i18n="spF3">Trilha Personalizada</span></div>
+    </div>
+
+    <div class="sp-bar-wrap"><div class="sp-bar-fill"></div></div>
+    <div class="sp-status" id="spStatus">Inicializando simulador...</div>
+    <div class="sp-hint" data-i18n="spHint">Clique para iniciar</div>
+  </div>
+
+  <div class="sp-version">v1.0</div>
+  <div class="sp-credits" id="spCredits"></div>
+</div>
+<!-- END SPLASH -->
+
+<header>
+  <div style="display:flex;flex-direction:column;gap:1px">
+    <div class="hlogo">LineBot Sim</div>
+    <div class="hsub" data-i18n="subtitle">Simulador Seguidor de Linha</div>
+  </div>
+  <div class="hled idle" id="led"></div>
+  <span id="modeLabel"></span>
+  <div class="hright">
+    <button id="btnAbout" onclick="showSplash()" data-i18n="btnAbout">ⓘ Sobre</button>
+    <button id="btnLang" onclick="toggleLang()">EN</button>
+    <div class="htime">
+      <span data-i18n="time">TEMPO</span>
+      <span id="simTime">0.0s</span>
+      <button id="btnResetTime" onclick="resetTime()" title="Reset" style="padding:2px 6px;background:transparent;border:1px solid var(--b2);color:var(--txtd);font-family:var(--mono);font-size:9px;cursor:pointer;letter-spacing:1px;transition:all .15s;line-height:1.4;" onmouseover="this.style.color='var(--grn)';this.style.borderColor='var(--grn)'" onmouseout="this.style.color='';this.style.borderColor=''">↺</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- LEFT PANEL -->
+  <div class="pnl pnl-l">
+    <div class="sec">
+      <div class="sec-h" data-i18n="secRobot">⚙ Configuração do Robô</div>
+      <div class="sec-b">
+        <div class="row"><div class="rl"><span data-i18n="axleDist">Dist. entre eixos</span><span id="vWB">50px</span></div><input type="range" id="slWB" min="20" max="120" value="50"></div>
+        <div class="row"><div class="rl"><span data-i18n="numSensors">Nº de sensores</span><span id="vNC">8</span></div><input type="range" id="slNC" min="2" max="16" step="1" value="8"></div>
+        <div class="row"><div class="rl"><span data-i18n="arrayWidth">Largura do array</span><span id="vSS">80px</span></div><input type="range" id="slSS" min="10" max="160" value="80"></div>
+        <div class="row"><div class="rl"><span data-i18n="sensorDist">Dist. dos sensores</span><span id="vSO">40px</span></div><input type="range" id="slSO" min="10" max="90" value="40"></div>
+        <div class="row"><div class="rl"><span data-i18n="sensorSize">Tamanho sensor</span><span id="vSR">1px</span></div><input type="range" id="slSR" min="1" max="5" step="2" value="1"></div>
+        <div class="row"><div class="rl"><span data-i18n="baseSpeed">Velocidade base</span><span id="vSP">2.5</span></div><input type="range" id="slSP" min="0.5" max="7" step="0.1" value="2.5"></div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-h" data-i18n="secDraw">🖌 Desenho</div>
+      <div class="sec-b">
+        <div class="row"><div class="rl"><span data-i18n="thickness">Espessura</span><span id="vBR">26px</span></div><input type="range" id="slBR" min="4" max="70" value="26"></div>
+        <div id="kbHint" style="font-size:11px;color:var(--txtd);line-height:1.8;border-top:1px solid var(--b1);padding-top:6px;"></div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-h" data-i18n="secStatus">◉ Estado</div>
+      <div class="sec-b">
+        <div class="kv"><span class="kl">X</span><span class="kv-v g" id="iX">—</span></div>
+        <div class="kv"><span class="kl">Y</span><span class="kv-v g" id="iY">—</span></div>
+        <div class="kv"><span class="kl" data-i18n="angle">Ângulo</span><span class="kv-v g" id="iAng">—</span></div>
+        <div style="margin-top:2px;font-size:11px;color:var(--txtd);letter-spacing:.6px;text-transform:uppercase;margin-bottom:3px" data-i18n="speeds">Velocidades</div>
+        <div class="speedbar">
+          <div class="speedbar-l"><div class="speedbar-l-fill" id="sbLf"></div></div>
+          <div style="width:1px;background:var(--b2)"></div>
+          <div class="speedbar-r"><div class="speedbar-r-fill" id="sbRf"></div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:2px;">
+          <span style="color:var(--blu)" id="iVL">—</span>
+          <span style="color:var(--grn)" id="iVR">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CANVAS -->
+  <div class="cvwrap" id="cvwrap">
+    <canvas id="cv"></canvas>
+    <div id="dimHint"></div>
+
+    <!-- Image import modal -->
+    <div id="imgBackdrop" onclick="cancelImage()"></div>
+    <div id="imgPanel" style="display:none;">
+      <div class="imgp-hdr">
+        <span data-i18n="imgTitle">Configurar Imagem</span>
+        <button class="imgp-close" onclick="cancelImage()">✕</button>
+      </div>
+      <div class="imgp-body">
+        <div class="imgp-preview">
+          <canvas id="imgThumbCanvas"></canvas>
+          <div class="imgp-filename" id="imgFileName">—</div>
+        </div>
+        <div class="imgp-row">
+          <div class="imgp-label" data-i18n="imgScale">Escala</div>
+          <div class="imgp-btns">
+            <button class="imgp-btn on" id="imgBtnFit"     onclick="setImgScale('fit')"     data-i18n="imgFit">Ajustar</button>
+            <button class="imgp-btn"    id="imgBtnFill"    onclick="setImgScale('fill')"    data-i18n="imgFill">Preencher</button>
+            <button class="imgp-btn"    id="imgBtnStretch" onclick="setImgScale('stretch')" data-i18n="imgStretch">Esticar</button>
+          </div>
+        </div>
+        <div class="imgp-row">
+          <div class="imgp-label"><span data-i18n="imgThresh">Limiar</span></div>
+          <div class="imgp-thresh">
+            <input type="range" id="imgThreshSlider" min="5" max="250" value="128"
+              oninput="imgThreshold=+this.value;document.getElementById('imgThreshVal').textContent=this.value;processImage()">
+            <span class="imgp-thresh-val" id="imgThreshVal">128</span>
+          </div>
+        </div>
+        <label class="imgp-check">
+          <input type="checkbox" id="imgInvertChk" onchange="imgInvertColors=this.checked;processImage()">
+          <span data-i18n="imgInvert">Inverter cores</span>
+        </label>
+        <div class="imgp-hint" data-i18n="imgHint">Use imagens com linha escura sobre fundo claro, ou ative "Inverter".</div>
+        <div class="imgp-actions">
+          <button class="imgp-apply"  onclick="applyImage()"  data-i18n="imgApply">Aplicar</button>
+          <button class="imgp-cancel" onclick="cancelImage()" data-i18n="imgCancel">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <input type="file" id="imgFileInput" accept="image/*" style="display:none">
+
+    <div class="tb-wrap">
+      <!-- Row 1: drawing tools -->
+      <div class="tb-row">
+        <span class="tb-lbl" data-i18n="tbDraw">Traçar</span>
+        <button class="tb on"  id="btnFree"  onclick="setMode('free')"    data-i18n="btnFree">✏ Livre</button>
+        <button class="tb"     id="btnLine"  onclick="setMode('line')"    data-i18n="btnLine">─ Linha</button>
+        <button class="tb"     id="btnEllp"  onclick="setMode('ellipse')" data-i18n="btnEllp">◯ Elipse</button>
+        <button class="tb"     id="btnRect"  onclick="setMode('rect')"    data-i18n="btnRect">▭ Ret.</button>
+        <div class="tb-sep"></div>
+        <button class="tb"     id="btnErase" onclick="setMode('erase')"   data-i18n="btnErase">⌫ Apagar</button>
+        <div class="tb-sep"></div>
+        <button class="tb"     id="btnFill"  onclick="toggleFill()"></button>
+      </div>
+      <!-- Row 2: actions -->
+      <div class="tb-row">
+        <span class="tb-lbl" data-i18n="tbAction">Ação</span>
+        <button class="tb"              id="btnPlace" onclick="setMode('place')"    data-i18n="btnPlace">⊕ Posicionar</button>
+        <div class="tb-sep"></div>
+        <button class="tb demo-btn"     onclick="drawDemo('oval')"   data-i18n="btnOval">◎ Oval</button>
+        <button class="tb demo-btn"     onclick="drawDemo('eight')"  data-i18n="btnEight">∞ Fig-8</button>
+        <button class="tb demo-btn"     onclick="drawDemo('square')" data-i18n="btnSquare">⬜ Retangular</button>
+        <div class="tb-sep"></div>
+        <button class="tb img-btn"      onclick="openImageFile()"    data-i18n="btnImage">📁 Imagem</button>
+        <div class="tb-sep"></div>
+        <button class="tb run-btn"      id="btnRun" onclick="toggleSim()"></button>
+        <button class="tb clr-btn"      onclick="clearTrack()"       data-i18n="btnClear">✕ Limpar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="pnl pnl-r">
+    <div class="sec">
+      <div class="sec-h" data-i18n="secSensors">◈ Sensores</div>
+      <div class="sec-b">
+        <div class="sbar-wrap" id="sbars"></div>
+        <div style="margin-top:5px;">
+          <div style="font-size:11px;color:var(--txtd);letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px;" data-i18n="lateralErr">Erro Lateral</div>
+          <div class="errwrap"><div class="errcenter"></div><div class="errfill" id="errFill"></div></div>
+          <div class="errlabs"><span data-i18n="leftLbl">◄ ESQ</span><span data-i18n="rightLbl">DIR ►</span></div>
+        </div>
+        <div class="kv" style="margin-top:3px;"><span class="kl" data-i18n="active">Ativos</span><span class="kv-v g" id="iAct">0 / 8</span></div>
+        <div class="kv"><span class="kl" data-i18n="spacing">Espaçamento</span><span class="kv-v" id="iSpac">—</span></div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-h" data-i18n="secPID">⚡ Controlador PID</div>
+      <div class="sec-b">
+        <div class="row"><div class="rl"><span data-i18n="kpLbl">Kp — proporcional</span><span id="vKP">1.2</span></div><input type="range" id="slKP" min="0" max="6" step="0.05" value="1.2"></div>
+        <div class="row"><div class="rl"><span data-i18n="kiLbl">Ki — integral</span><span id="vKI">0.00</span></div><input type="range" id="slKI" min="0" max="1" step="0.01" value="0"></div>
+        <div class="row"><div class="rl"><span data-i18n="kdLbl">Kd — derivativo</span><span id="vKD">0.50</span></div><input type="range" id="slKD" min="0" max="4" step="0.05" value="0.5"></div>
+        <div style="height:1px;background:var(--b1);margin:2px 0;"></div>
+        <div class="kv"><span class="kl" data-i18n="error">Erro</span><span class="kv-v" id="iErr">0.000</span></div>
+        <div class="kv"><span class="kl" data-i18n="pidOut">Saída PID</span><span class="kv-v" id="iPID">0.000</span></div>
+        <div class="kv"><span class="kl" data-i18n="integral">Integral</span><span class="kv-v" id="iInt">0.000</span></div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-h" data-i18n="secGeo">📐 Geometria</div>
+      <div class="sec-b">
+        <div class="kv"><span class="kl" data-i18n="axleDistG">Entre eixos</span><span class="kv-v g" id="gWB">50px</span></div>
+        <div class="kv"><span class="kl" data-i18n="arrayG">Array sensores</span><span class="kv-v g" id="gSS">80px</span></div>
+        <div class="kv"><span class="kl" data-i18n="sensorDistG">Dist. sensores</span><span class="kv-v g" id="gSO">40px</span></div>
+        <div class="kv"><span class="kl" data-i18n="numG">Nº sensores</span><span class="kv-v g" id="gNC">8</span></div>
+        <div class="kv"><span class="kl" data-i18n="resolution">Resolução</span><span class="kv-v g" id="gSR">1×1px</span></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="js/app.js"></script>
+</body>
+</html>
