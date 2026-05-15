@@ -2,7 +2,7 @@
 
 A browser-based line-following robot simulator with real-time PID control — no dependencies, no build step.
 
-**Live demo:** [arthurfmolina.github.io/linebotsim](https://arthurfmolina.github.io/linebotsim) *(update with your GitHub username)*
+**Live demo:** [arthurmolina.github.io/linebotsim](https://arthurmolina.github.io/linebotsim)
 
 ---
 
